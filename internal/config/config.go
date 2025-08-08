@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 )
 
 type Config struct {
@@ -12,25 +11,12 @@ type Config struct {
 	CurrentUserName string `json:"current_user_name"`
 }
 
-var configFileName = ".gatorconfig.json"
-
-func getConfigFilePath() (string, error) {
-	homePath, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("could not return current home directory: %w", err)
-	}
-
-	fullPath := filepath.Join(homePath, configFileName)
-	return fullPath, nil
+type ConfigManager struct {
+	Path string
 }
 
-func Read() (*Config, error) {
-	path, err := getConfigFilePath()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get config path: %w", err)
-	}
-
-	data, err := os.ReadFile(path)
+func (cm *ConfigManager) Read() (*Config, error) {
+	data, err := os.ReadFile(cm.Path)
 	if err != nil {
 		return nil, fmt.Errorf("could not read config file: %w", err)
 	}
@@ -42,19 +28,14 @@ func Read() (*Config, error) {
 	return &conf, nil
 }
 
-func (c *Config) SetUser(user_name string) error {
-	c.CurrentUserName = user_name
+func (cm *ConfigManager) SetUser(c *Config, userName string) error {
+	c.CurrentUserName = userName
 	data, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
 		return fmt.Errorf("could not marshal config:%w", err)
 	}
 
-	path, err := getConfigFilePath()
-	if err != nil {
-		return fmt.Errorf("failed to get config path: %w", err)
-	}
-
-	if err := os.WriteFile(path, data, 0644); err != nil {
+	if err := os.WriteFile(cm.Path, data, 0644); err != nil {
 		return fmt.Errorf("could not write config: %w", err)
 	}
 	return nil
