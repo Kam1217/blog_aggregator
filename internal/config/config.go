@@ -12,7 +12,7 @@ type Config struct {
 	CurrentUserName string `json:"current_user_name"`
 }
 
-const configFileName = ".gatorconfig.json"
+var configFileName = ".gatorconfig.json"
 
 func getConfigFilePath() (string, error) {
 	homePath, err := os.UserHomeDir()
