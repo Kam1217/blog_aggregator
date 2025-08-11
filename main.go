@@ -28,6 +28,10 @@ func main() {
 	}
 	cmds.register("login", handlerLogin)
 
+	if len(os.Args) < 2 {
+		log.Fatal("Usage: cli <command> [args...]")``
+	}
+
 	updatedCfg, err := cfgMgr.Read()
 	if err != nil {
 		log.Fatal("failed to read updated config: ", err)
