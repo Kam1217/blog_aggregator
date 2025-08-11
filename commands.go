@@ -30,3 +30,14 @@ func handlerLogin(s *state, cmd command) error {
 	fmt.Printf("Username has been set to: %s\n", s.cfg.CurrentUserName)
 	return nil
 }
+
+func (c *commands) run(s *state, cmd command) error {
+	handler, exists := c.registeredCommands[cmd.name]
+	if !exists {
+		return fmt.Errorf("command does not exist: %v", cmd.name)
+	}
+	if err := handler(s, cmd); err != nil {
+		return fmt.Errorf("error calling the command: %w", err)
+	}
+	return nil
+}
