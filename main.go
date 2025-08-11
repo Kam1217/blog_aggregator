@@ -22,9 +22,11 @@ func main() {
 		log.Fatal("failed to read config: ", err)
 	}
 
-	if err := cfgMgr.SetUser(cfg, "Kamila"); err != nil {
-		log.Fatal("failers to set user: ", err)
+	programState := state{cfg: &cfg, cfgManager: cfgMgr}
+	cmds := commands{
+		registeredCommands: make(map[string]func(*state, command) error),
 	}
+	cmds.register("login", handlerLogin)
 
 	updatedCfg, err := cfgMgr.Read()
 	if err != nil {
