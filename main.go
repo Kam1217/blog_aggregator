@@ -29,13 +29,13 @@ func main() {
 	cmds.register("login", handlerLogin)
 
 	if len(os.Args) < 2 {
-		log.Fatal("Usage: cli <command> [args...]")
+		log.Fatal("not enough arguments provided")
 	}
 	cmdName := os.Args[1]
 	cmdArgs := os.Args[2:]
 	cmd := command{name: cmdName, args: cmdArgs}
 	if err := cmds.run(&programState, cmd); err != nil {
-		log.Fatal("could not run the command due to:", err)
+		log.Fatal("username is required")
 	}
 
 	updatedCfg, err := cfgMgr.Read()
