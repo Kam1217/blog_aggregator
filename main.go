@@ -22,14 +22,20 @@ func main() {
 		log.Fatal("failed to read config: ", err)
 	}
 
-	programState := state{cfg: &cfg, cfgManager: cfgMgr}
+	programState := state{cfg: cfg, cfgManager: cfgMgr}
 	cmds := commands{
 		registeredCommands: make(map[string]func(*state, command) error),
 	}
 	cmds.register("login", handlerLogin)
 
 	if len(os.Args) < 2 {
-		log.Fatal("Usage: cli <command> [args...]")``
+		log.Fatal("Usage: cli <command> [args...]")
+	}
+	cmdName := os.Args[1]
+	cmdArgs := os.Args[2:]
+	cmd := command{name: cmdName, args: cmdArgs}
+	if err := cmds.run(&programState, cmd); err != nil {
+		log.Fatal("could not run the command due to:", err)
 	}
 
 	updatedCfg, err := cfgMgr.Read()
