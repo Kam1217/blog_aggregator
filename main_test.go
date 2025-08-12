@@ -104,4 +104,12 @@ func TestHandlerLogin(t *testing.T) {
 	}
 
 	s := &state{cfg: cfg, cfgManager: cfgMgr}
+
+	t.Run("No arguments", func(t *testing.T) {
+		cmd := command{name: "login", args: []string{}}
+		err := handlerLogin(s, cmd)
+		if err == nil {
+			t.Errorf("Expected error when no arguments provided")
+		}
+	})
 }
