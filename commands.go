@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/Kam1217/blog_aggregator/internal/config"
 	"github.com/Kam1217/blog_aggregator/internal/database"
+	"github.com/google/uuid"
 )
 
 type state struct {
@@ -46,4 +49,29 @@ func (c *commands) run(s *state, cmd command) error {
 
 func (c *commands) register(name string, f func(*state, command) error) {
 	c.registeredCommands[name] = f
+}
+
+func handlerRegister(s *state, cmd command) error {
+	if len(cmd.args) == 0 {
+		return fmt.Errorf("login handler expects a single argument but got an empty slice")
+	}
+
+	newUser, err := s.db.CreateUser(context.Background(), database.CreateUserParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      cmd.args[0],
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create user")
+	}
+
+	s.db.GetUser(context.Background(), cmd.args[0])
+
+	if err := s.cfgManager.SetUser(s.cfg, newUser.Name); err != nil {
+		return fmt.Errorf("error setting the config username: %w", err)
+	}
+
+	fmt.Printf("Username %s has been registered", newUser.Name)
+	return nil
 }
