@@ -112,4 +112,25 @@ func TestHandlerLogin(t *testing.T) {
 			t.Errorf("Expected error when no arguments provided")
 		}
 	})
+
+	t.Run("Valid username", func(t *testing.T) {
+		cmd := command{name: "login", args: []string{"test_user"}}
+		err := handlerLogin(s, cmd)
+		if err != nil {
+			t.Errorf("Expected no error but got: %v", err)
+		}
+
+		updatedCfg, err := cfgMgr.Read()
+		if err != nil {
+			t.Fatalf("Failed to read upadated config: %v", err)
+		}
+
+		if updatedCfg.CurrentUserName != "test_user" {
+			t.Errorf("Expected username 'test_user' but got: %s", updatedCfg.CurrentUserName)
+		}
+
+		if updatedCfg.DbURL != expectedConf.DbURL {
+			t.Errorf("Expected DbURL to remain %s but got %s", expectedConf.DbURL, updatedCfg.DbURL)
+		}
+	})
 }
