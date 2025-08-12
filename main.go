@@ -1,12 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/Kam1217/blog_aggregator/internal/config"
+	"github.com/Kam1217/blog_aggregator/internal/database"
 	_ "github.com/lib/pq"
 )
 
@@ -23,7 +25,13 @@ func main() {
 		log.Fatal("failed to read config: ", err)
 	}
 
-	programState := state{cfg: cfg, cfgManager: cfgMgr}
+	db, err := sql.Open("postgres", cfg.DbURL)
+	if err != nil {
+		log.Fatal("failed to open a connection to the database:", err)
+	}
+	dbQueries := database.New(db)
+
+	programState := state{cfg: cfg, cfgManager: cfgMgr, db: dbQueries}
 	cmds := commands{
 		registeredCommands: make(map[string]func(*state, command) error),
 	}
