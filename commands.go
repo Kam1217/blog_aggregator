@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/Kam1217/blog_aggregator/internal/config"
@@ -55,6 +58,15 @@ func handlerRegister(s *state, cmd command) error {
 	if len(cmd.args) == 0 {
 		return fmt.Errorf("login handler expects a single argument but got an empty slice")
 	}
+	user, err := s.db.GetUser(context.Background(), cmd.args[0])
+	//TODO: double check we dont need err != nil
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return err
+	}
+
+	if user.Name != "" {
+		os.Exit(1)
+	}
 
 	newUser, err := s.db.CreateUser(context.Background(), database.CreateUserParams{
 		ID:        uuid.New(),
@@ -63,15 +75,13 @@ func handlerRegister(s *state, cmd command) error {
 		Name:      cmd.args[0],
 	})
 	if err != nil {
-		return fmt.Errorf("failed to create user")
+		return fmt.Errorf("failed to create user: %v", err)
 	}
-
-	s.db.GetUser(context.Background(), cmd.args[0])
 
 	if err := s.cfgManager.SetUser(s.cfg, newUser.Name); err != nil {
 		return fmt.Errorf("error setting the config username: %w", err)
 	}
+	fmt.Printf("Username %s has been registered:\n", newUser.Name)
 
-	fmt.Printf("Username %s has been registered", newUser.Name)
 	return nil
 }
