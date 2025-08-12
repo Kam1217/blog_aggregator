@@ -62,4 +62,20 @@ func TestCommandRun(t *testing.T) {
 			t.Error("Expected error for non-existent command")
 		}
 	})
+
+	t.Run("Success command", func(t *testing.T) {
+		cmd := command{name: "success", args: []string{}}
+		err := cmds.run(s, cmd)
+		if err != nil {
+			t.Errorf("Expected no error but got: %v", err)
+		}
+	})
+
+	t.Run("Fail command", func(t *testing.T) {
+		cmd := command{name: "fail", args: []string{}}
+		err := cmds.run(s, cmd)
+		if err == nil {
+			t.Errorf("Expected error from failer handler")
+		}
+	})
 }
