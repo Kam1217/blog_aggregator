@@ -23,4 +23,11 @@ func TestCommandsRegister(t *testing.T) {
 			t.Errorf("Expected 'test' command to be registered")
 		}
 	})
+
+	t.Run("Register multiple commands", func(t *testing.T) {
+		cmds.register("test_2", testHandler)
+		if len(cmds.registeredCommands) != 2 {
+			t.Errorf("Expected 2 registered commands but got %d", len(cmds.registeredCommands))
+		}
+	})
 }
