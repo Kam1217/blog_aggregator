@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/Kam1217/blog_aggregator/internal/config"
+	_ "github.com/lib/pq"
 )
 
 func main() {
