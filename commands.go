@@ -4,11 +4,13 @@ import (
 	"fmt"
 
 	"github.com/Kam1217/blog_aggregator/internal/config"
+	"github.com/Kam1217/blog_aggregator/internal/database"
 )
 
 type state struct {
 	cfg        *config.Config
 	cfgManager *config.ConfigManager
+	db         *database.Queries
 }
 
 type command struct {
