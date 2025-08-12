@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/Kam1217/blog_aggregator/internal/config"
@@ -78,4 +81,27 @@ func TestCommandRun(t *testing.T) {
 			t.Errorf("Expected error from failer handler")
 		}
 	})
+}
+
+func TestHandlerLogin(t *testing.T) {
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "test_gatorconfig.jason")
+	cfgMgr := &config.ConfigManager{Path: configPath}
+
+	expectedConf := &config.Config{DbURL: "postgres://example", CurrentUserName: ""}
+	data, err := json.Marshal(expectedConf)
+	if err != nil {
+		t.Errorf("Failed to marshal:%v", err)
+	}
+
+	if err := os.WriteFile(configPath, data, 0644); err != nil {
+		t.Fatalf("failed to write config: %v", err)
+	}
+
+	cfg, err := cfgMgr.Read()
+	if err != nil {
+		t.Fatalf("failed to read config: %v", err)
+	}
+
+	s := &state{cfg: cfg, cfgManager: cfgMgr}
 }
