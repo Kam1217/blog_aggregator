@@ -32,6 +32,16 @@ func handlerLogin(s *state, cmd command) error {
 	if len(cmd.args) == 0 {
 		return fmt.Errorf("login handler expects a single argument but got an empty slice")
 	}
+
+	_, err := s.db.GetUser(context.Background(), cmd.args[0])
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			os.Exit(1)
+		} else {
+			return fmt.Errorf("database error getting user: %w", err)
+		}
+	}
+
 	if err := s.cfgManager.SetUser(s.cfg, cmd.args[0]); err != nil {
 		return fmt.Errorf("error setting the username to config: %w", err)
 	}
@@ -59,7 +69,6 @@ func handlerRegister(s *state, cmd command) error {
 		return fmt.Errorf("login handler expects a single argument but got an empty slice")
 	}
 	user, err := s.db.GetUser(context.Background(), cmd.args[0])
-	//TODO: double check we dont need err != nil
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
@@ -81,7 +90,7 @@ func handlerRegister(s *state, cmd command) error {
 	if err := s.cfgManager.SetUser(s.cfg, newUser.Name); err != nil {
 		return fmt.Errorf("error setting the config username: %w", err)
 	}
-	fmt.Printf("Username %s has been registered:\n", newUser.Name)
+	fmt.Printf("New user has been created %v:\n", newUser)
 
 	return nil
 }
