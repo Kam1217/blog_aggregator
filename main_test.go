@@ -134,3 +134,5 @@ func TestHandlerLogin(t *testing.T) {
 		}
 	})
 }
+
+//TODO:Register, update login and getusers
