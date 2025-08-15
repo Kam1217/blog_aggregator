@@ -15,4 +15,4 @@ SELECT * FROM users WHERE name = $1;
 DELETE FROM users;
 
 -- name: GetUsers :many
-SELECT * FROM users
+SELECT * FROM users;
