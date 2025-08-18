@@ -220,7 +220,8 @@ func handlerFollowing(s *state, cmd command, user database.User) error {
 	}
 
 	if len(follows) == 0 {
-		return fmt.Errorf("there are currently no follows")
+		fmt.Println("There are currently no follows")
+		return nil
 	}
 
 	for _, follow := range follows {
@@ -241,5 +242,7 @@ func handlerUnfollow(s *state, cmd command, user database.User) error {
 	if err != nil {
 		return fmt.Errorf("failed to unfollow feed: %w", err)
 	}
+
+	fmt.Println("succesfully unfollowed feed")
 	return nil
 }
