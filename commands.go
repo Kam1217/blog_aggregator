@@ -201,5 +201,21 @@ func handlerFollow(s *state, cmd command) error {
 }
 
 func handlerFollowing(s *state, cmd command) error {
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("failed to get user: %w", err)
+	}
+	follows, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
+	if err != nil {
+		return fmt.Errorf("failed to get follows: %w", err)
+	}
+
+	if len(follows) == 0 {
+		return fmt.Errorf("There are currently no follows")
+	}
+
+	for _, follow := range follows {
+		fmt.Println(follow.FeedName)
+	}
 	return nil
 }
