@@ -150,6 +150,17 @@ func handlerAddFeed(s *state, cmd command) error {
 	if err != nil {
 		return fmt.Errorf("failed to create feed: %w", err)
 	}
+
+	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to auto-follow new feed: %w", err)
+	}
 	fmt.Println(feed)
 	return nil
 }
@@ -211,7 +222,7 @@ func handlerFollowing(s *state, cmd command) error {
 	}
 
 	if len(follows) == 0 {
-		return fmt.Errorf("There are currently no follows")
+		return fmt.Errorf("there are currently no follows")
 	}
 
 	for _, follow := range follows {
