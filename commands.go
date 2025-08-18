@@ -155,6 +155,19 @@ func handlerAddFeed(s *state, cmd command) error {
 }
 
 func handlerFeeds(s *state, cmd command) error {
-	fmt.Println("This command will list the feeds")
+	feeds, err := s.db.GetFeeds(context.Background())
+	if err != nil {
+		return fmt.Errorf("error getting feeds: %w", err)
+	}
+
+	if len(feeds) == 0 {
+		fmt.Println("There is no feeds in the database, try adding a feed")
+	}
+
+	for _, feed := range feeds {
+		fmt.Printf("%s\n", feed.Name)
+		fmt.Printf("%s\n", feed.Url)
+		fmt.Printf("%s\n", feed.Name_2)
+	}
 	return nil
 }
