@@ -52,7 +52,7 @@ func main() {
 	cmdArgs := os.Args[2:]
 	cmd := command{name: cmdName, args: cmdArgs}
 	if err := cmds.run(&programState, cmd); err != nil {
-		log.Fatal("username is required")
+		log.Fatal(err.Error())
 	}
 
 	_, err = cfgMgr.Read()
