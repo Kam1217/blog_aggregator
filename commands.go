@@ -38,11 +38,29 @@ func middlewareLoggedIn(handler func(s *state, cmd command, user database.User) 
 	}
 }
 
+func scrapeFeeds(s *state) error {
+	feed, err := s.db.GetNextFeedToFetch(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed to fetch the next feed: %w", err)
+	}
+	_, err = s.db.MarkFeedFetched(context.Background(), feed.ID)
+	if err != nil {
+		return fmt.Errorf("failed to mark the fetched feed: %w", err)
+	}
+	data, err := fetchFeed(context.Background(), feed.Url)
+	if err != nil {
+		return fmt.Errorf("failed to make a HTTP request: %w", err)
+	}
+	for _, post := range data.Channel.Item {
+		fmt.Println(post.Title)
+	}
+	return nil
+}
+
 func handlerLogin(s *state, cmd command) error {
 	if len(cmd.args) == 0 {
 		return fmt.Errorf("login handler expects a single argument but got an empty slice")
 	}
-
 	_, err := s.db.GetUser(context.Background(), cmd.args[0])
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -51,7 +69,6 @@ func handlerLogin(s *state, cmd command) error {
 			return fmt.Errorf("database error getting user: %w", err)
 		}
 	}
-
 	if err := s.cfgManager.SetUser(s.cfg, cmd.args[0]); err != nil {
 		return fmt.Errorf("error setting the username to config: %w", err)
 	}
@@ -82,11 +99,9 @@ func handlerRegister(s *state, cmd command) error {
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
-
 	if user.Name != "" {
 		os.Exit(1)
 	}
-
 	newUser, err := s.db.CreateUser(context.Background(), database.CreateUserParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
@@ -96,12 +111,11 @@ func handlerRegister(s *state, cmd command) error {
 	if err != nil {
 		return fmt.Errorf("failed to create user: %v", err)
 	}
-
 	if err := s.cfgManager.SetUser(s.cfg, newUser.Name); err != nil {
 		return fmt.Errorf("error setting the config username: %w", err)
 	}
-	fmt.Printf("New user has been created %v:\n", newUser)
 
+	fmt.Printf("New user has been created %v:\n", newUser)
 	return nil
 }
 
@@ -130,20 +144,26 @@ func handlerUsers(s *state, cmd command) error {
 	return nil
 }
 
-func handlerAgg(s *state, _ command) error {
-	data, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
+func handlerAgg(s *state, cmd command) error {
+	timeBetweenRequests, err := time.ParseDuration(cmd.args[0])
 	if err != nil {
-		return fmt.Errorf("failed to fetch feed: %w", err)
+		return fmt.Errorf("failed to set time between requests: %w", err)
 	}
-	fmt.Printf("%+v\n", data)
-	return nil
+	fmt.Printf("Collecting feeds every %v\n", timeBetweenRequests)
+
+	ticker := time.NewTicker(timeBetweenRequests)
+	for ; ; <-ticker.C {
+		err = scrapeFeeds(s)
+		if err != nil {
+			fmt.Printf("failed to scrape the feed: %v", err)
+		}
+	}
 }
 
 func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 2 {
 		return fmt.Errorf("add feed needs 2 arguments")
 	}
-
 	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
@@ -152,11 +172,9 @@ func handlerAddFeed(s *state, cmd command, user database.User) error {
 		Url:       cmd.args[1],
 		UserID:    user.ID,
 	})
-
 	if err != nil {
 		return fmt.Errorf("failed to create feed: %w", err)
 	}
-
 	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
@@ -176,11 +194,9 @@ func handlerListFeeds(s *state, cmd command) error {
 	if err != nil {
 		return fmt.Errorf("error getting feeds: %w", err)
 	}
-
 	if len(feeds) == 0 {
 		fmt.Println("There is no feeds in the database, try adding a feed")
 	}
-
 	for _, feed := range feeds {
 		fmt.Printf("%s\n", feed.Name)
 		fmt.Printf("%s\n", feed.Url)
@@ -197,7 +213,6 @@ func handlerFollow(s *state, cmd command, user database.User) error {
 	if err != nil {
 		return fmt.Errorf("failed to get feed by url")
 	}
-
 	feedFollow, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
@@ -208,7 +223,6 @@ func handlerFollow(s *state, cmd command, user database.User) error {
 	if err != nil {
 		return fmt.Errorf("failed to follow feed: %w", err)
 	}
-
 	fmt.Printf("%s is now following %s\n", feedFollow.UserName, feedFollow.FeedName)
 	return nil
 }
@@ -218,12 +232,10 @@ func handlerFollowing(s *state, cmd command, user database.User) error {
 	if err != nil {
 		return fmt.Errorf("failed to get follows: %w", err)
 	}
-
 	if len(follows) == 0 {
 		fmt.Println("There are currently no follows")
 		return nil
 	}
-
 	for _, follow := range follows {
 		fmt.Println(follow.FeedName)
 	}
@@ -242,7 +254,6 @@ func handlerUnfollow(s *state, cmd command, user database.User) error {
 	if err != nil {
 		return fmt.Errorf("failed to unfollow feed: %w", err)
 	}
-
 	fmt.Println("succesfully unfollowed feed")
 	return nil
 }

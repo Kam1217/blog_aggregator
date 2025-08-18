@@ -54,7 +54,6 @@ func main() {
 	if err := cmds.run(&programState, cmd); err != nil {
 		log.Fatal(err.Error())
 	}
-
 	_, err = cfgMgr.Read()
 	if err != nil {
 		log.Fatal("failed to read updated config: ", err)
