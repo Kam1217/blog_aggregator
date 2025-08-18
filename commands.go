@@ -154,7 +154,7 @@ func handlerAddFeed(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFeeds(s *state, cmd command) error {
+func handlerListFeeds(s *state, cmd command) error {
 	feeds, err := s.db.GetFeeds(context.Background())
 	if err != nil {
 		return fmt.Errorf("error getting feeds: %w", err)

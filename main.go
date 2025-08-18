@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -41,7 +40,7 @@ func main() {
 	cmds.register("users", handlerUsers)
 	cmds.register("agg", handlerAgg)
 	cmds.register("addfeed", handlerAddFeed)
-	cmds.register("feeds", handlerFeeds)
+	cmds.register("feeds", handlerListFeeds)
 
 	if len(os.Args) < 2 {
 		log.Fatal("not enough arguments provided")
@@ -53,9 +52,8 @@ func main() {
 		log.Fatal("username is required")
 	}
 
-	updatedCfg, err := cfgMgr.Read()
+	_, err = cfgMgr.Read()
 	if err != nil {
 		log.Fatal("failed to read updated config: ", err)
 	}
-	fmt.Printf("%+v\n", updatedCfg)
 }
