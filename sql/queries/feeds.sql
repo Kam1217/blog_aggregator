@@ -17,3 +17,9 @@ ON feeds.user_id = users.id;
 
 -- name: GetFeedByURL :one
 SELECT * FROM feeds WHERE url = $1; 
+
+-- name: MarkFeedFetched :one
+UPDATE feeds 
+SET last_fetched_at = NOW(), updated_at = NOW()
+WHERE feeds.ID = $1
+RETURNING *;
