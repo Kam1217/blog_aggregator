@@ -14,3 +14,4 @@ SELECT inserted.*, users.name AS user_name, feeds.name AS feed_name
 FROM inserted
 JOIN users ON inserted.user_id = users.id
 JOIN feeds ON inserted.feed_id = feeds.id;
+
