@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/Kam1217/blog_aggregator/internal/config"
@@ -52,7 +54,31 @@ func scrapeFeeds(s *state) error {
 		return fmt.Errorf("failed to make a HTTP request: %w", err)
 	}
 	for _, post := range data.Channel.Item {
-		fmt.Println(post.Title)
+		t, err := time.Parse(time.RFC1123Z, post.PubDate)
+		if err != nil {
+			fmt.Printf("could not parse pubDate: %v\n", err)
+			continue
+		}
+		_, err = s.db.CreatePost(context.Background(), database.CreatePostParams{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			Title:     post.Title,
+			Url:       post.Link,
+			Description: sql.NullString{
+				String: post.Description,
+				Valid:  true,
+			},
+			PublishedAt: t,
+			FeedID:      feed.ID,
+		})
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+				continue
+			}
+			log.Printf("Couldn't create post: %v", err)
+			continue
+		}
 	}
 	return nil
 }
