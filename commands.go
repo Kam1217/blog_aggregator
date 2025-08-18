@@ -153,3 +153,8 @@ func handlerAddFeed(s *state, cmd command) error {
 	fmt.Println(feed)
 	return nil
 }
+
+func handlerFeeds(s *state, cmd command) error {
+	fmt.Println("This command will list the feeds")
+	return nil
+}
