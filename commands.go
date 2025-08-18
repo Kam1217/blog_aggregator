@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -281,5 +282,27 @@ func handlerUnfollow(s *state, cmd command, user database.User) error {
 		return fmt.Errorf("failed to unfollow feed: %w", err)
 	}
 	fmt.Println("succesfully unfollowed feed")
+	return nil
+}
+
+func handlerBrowse(s *state, cmd command) error {
+	limit := 2 // default
+	if len(cmd.args) > 0 {
+		if l, err := strconv.Atoi(cmd.args[0]); err == nil {
+			limit = l
+		}
+	}
+
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("failed to get user: %w", err)
+	}
+	posts, err := s.db.GetPostForUser(context.Background(), database.GetPostForUserParams{
+		UserID: user.ID,
+		Limit:  int32(limit),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get posts for user: %w", err)
+	}
 	return nil
 }
