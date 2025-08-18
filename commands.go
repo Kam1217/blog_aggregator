@@ -199,3 +199,7 @@ func handlerFollow(s *state, cmd command) error {
 	fmt.Printf("%s is now following %s\n", feedFollow.UserName, feedFollow.FeedName)
 	return nil
 }
+
+func handlerFollowing(s *state, cmd command) error {
+	return nil
+}
