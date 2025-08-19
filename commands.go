@@ -301,8 +301,16 @@ func handlerBrowse(s *state, cmd command) error {
 		UserID: user.ID,
 		Limit:  int32(limit),
 	})
+	if len(posts) == 0 {
+		fmt.Println("No posts to browse. Try following some feeds!")
+		return nil
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get posts for user: %w", err)
+	}
+	for _, post := range posts {
+		fmt.Printf("Title: %s\nFeed: %s\nDate: %s\nURL: %s\n\n",
+			post.Title, post.FeedName, post.PublishedAt.Format(time.RFC822), post.Url)
 	}
 	return nil
 }

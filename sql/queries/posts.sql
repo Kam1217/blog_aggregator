@@ -12,7 +12,7 @@ VALUES (
 )
 RETURNING *;
 
--- name: GetPostForUser :one
+-- name: GetPostForUser :many
 SELECT 
   posts.*, 
   feeds.name AS feed_name
